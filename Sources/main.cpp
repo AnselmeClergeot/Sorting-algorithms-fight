@@ -4,15 +4,16 @@
 #include <chrono>
 #include <cassert>
 #include <algorithm>
+#include <deque>
+#include <cmath>
 #include "MaxHeap.h"
 
 
 //Method to swap two element of a same array
-void swap(std::vector<int> &array, const int lhs_index, const int rhs_index)
+template<typename T>
+void swap(std::vector<T> &array, const int lhs_index, const int rhs_index)
 {
-    assert(lhs_index < array.size() && rhs_index < array.size());
-
-    const int temp {array[lhs_index]};
+    const T temp {array[lhs_index]};
     array[lhs_index] = array[rhs_index];
     array[rhs_index] = temp;
 }
@@ -24,7 +25,8 @@ int random_number(const int min, const int max)
 }
 
 //Check if the array is correctly sorted
-bool is_sorted(const std::vector<int> &array)
+template<typename T>
+bool is_sorted(const std::vector<T> &array)
 {
     bool sorted {true};
 
@@ -38,7 +40,8 @@ bool is_sorted(const std::vector<int> &array)
 }
 
 //Print the array for debugging purpose
-void debug_array(const std::vector<int> &array)
+template<typename T>
+void debug_array(const std::vector<T> &array)
 {
     std::cout << '[';
 
@@ -51,7 +54,8 @@ void debug_array(const std::vector<int> &array)
 }
 
 //Print the array for debugging purpose
-void debug_array(const std::vector<int> &array, const int first, const int last)
+template<typename T>
+void debug_array(const std::vector<T> &array, const int first, const int last)
 {
     assert(first >= 0 && first < array.size() && last >= 0 && last < array.size());
     std::cout << '[';
@@ -71,13 +75,13 @@ void quick_sort(std::vector<int> &array, const int first_index, const int last_i
     int wall_index = first_index;
 
     //Walking through each element from first_index to last_index
-    for(int i { first_index }; i <= last_index; i++)
+    for(int i { first_index }; i <= last_index; ++i)
     {
         if(array[i] < pivot_value)
         {
             //If the element is < to the pivot value, put that element just after the wall
             swap(array, i, wall_index);
-            wall_index++; //And put the wall just after this value. Now this value is to the left of the wall.
+            ++wall_index; //And put the wall just after this value. Now this value is to the left of the wall.
         }
     }
 
@@ -105,7 +109,7 @@ void bubble_sort(std::vector<int> &array)
     do
     {
         swapped = false; //For now, no swap were made.
-        for(int i {0}; i < array.size() - 1; i++)
+        for(int i {0}; i < array.size() - 1; ++i)
         {
             if(array[i+1] < array[i]) //If twe contiguous elements are out of order, swap them.
             {
@@ -120,7 +124,7 @@ void bubble_sort(std::vector<int> &array)
 void insertion_sort(std::vector<int> &array)
 {
     //For each iteration, elements from 0 to i - 1 are sorted.
-    for(int i {1}; i < array.size(); i++)
+    for(int i {1}; i < array.size(); ++i)
     {
         int j {i};
 
@@ -130,7 +134,7 @@ void insertion_sort(std::vector<int> &array)
         while(j > 0 && array[j - 1] > value_to_insert)
         {
             array[j] = array[j-1]; //Shift current element to the right to prepare insertion
-            j--;
+            --j;
         }
 
         //We shifted elements to the right so there is a hole at array[j]. This is where the value must be inserted.
@@ -148,7 +152,7 @@ void shaker_sort(std::vector<int> &array)
         swapped = false; // No swap occured for now.
 
         //Perform one iteration of bubble sort from left to right
-        for(int i {0}; i < array.size()-1; i++)
+        for(int i {0}; i < array.size()-1; ++i)
         {
             if(array[i+1] < array[i])
             {
@@ -158,7 +162,7 @@ void shaker_sort(std::vector<int> &array)
         }
 
         //Perform one iteration of bubble sort, but now from right to left
-        for(int i {array.size()-2}; i >= 0; i--)
+        for(int i {array.size()-2}; i >= 0; --i)
         {
             if(array[i+1] < array[i])
             {
@@ -179,7 +183,7 @@ void gnome_sort(std::vector<int> &array)
     {
         if(array[i+1] >= array[i]) //If the contiguous elements array[i] array[i+1] are in order, search for next contiguous elements. (i++)
         {
-            i++;
+            ++i;
         }
 
         else //if the elements are unsorted
@@ -187,7 +191,7 @@ void gnome_sort(std::vector<int> &array)
            swap(array, i, i+1); //Swap the elements to make them sorted
 
             if(i >= 1) //Go back in iteration (i--).
-                i--;
+                --i;
         }
     }
 }
@@ -218,15 +222,18 @@ void merge(std::vector<int> &array, std::vector<int> &temp_array, const int left
 
     while(left_cur_index <= left_end_index && right_cur_index <= right_end_index)
     {
-        if(array[left_cur_index] <= array[right_cur_index])
+        int cur_left_value {array[left_cur_index]};
+        int cur_right_value {array[right_cur_index]};
+
+        if(cur_left_value <= cur_right_value)
         {
-            temp_array.push_back(array[left_cur_index]);
-            left_cur_index++;
+            temp_array.push_back(cur_left_value);
+            ++left_cur_index;
         }
         else
         {
-            temp_array.push_back(array[right_cur_index]);
-            right_cur_index++;
+            temp_array.push_back(cur_right_value);
+            ++right_cur_index;
         }
     }
 
@@ -235,7 +242,7 @@ void merge(std::vector<int> &array, std::vector<int> &temp_array, const int left
     //If the left sub-array is not empty
     if(left_cur_index <= left_end_index)
     {
-        for(int i {left_cur_index}; i <= left_end_index; i++) //Add all the values of this sub-array to the final sorted array
+        for(int i {left_cur_index}; i <= left_end_index; ++i) //Add all the values of this sub-array to the final sorted array
         {
             temp_array.push_back(array[i]);
         }
@@ -244,7 +251,7 @@ void merge(std::vector<int> &array, std::vector<int> &temp_array, const int left
     //Same method for right sub-array.
     else if(right_cur_index <= right_end_index)
     {
-        for(int i {right_cur_index}; i <= right_end_index; i++)
+        for(int i {right_cur_index}; i <= right_end_index; ++i)
         {
             temp_array.push_back(array[i]);
         }
@@ -281,11 +288,11 @@ void merge_sort(std::vector<int> &array)
 //Selection sort algorithm - inefficient algorithm
 void selection_sort(std::vector<int> &array)
 {
-    for(int i {0}; i < array.size() - 1; i++)
+    for(int i {0}; i < array.size() - 1; ++i)
     {
         int lowest_index {i};
 
-        for(int j {i+1}; j < array.size(); j++) //Iterating array[i+1...end]
+        for(int j {i+1}; j < array.size(); ++j) //Iterating array[i+1...end]
         {
             if(array[j] < array[lowest_index]) //If array[j] is < to the minimum found
                 lowest_index = j; //Then update the index of the lowest value
@@ -311,7 +318,7 @@ void comb_sort(std::vector<int> &array)
         if(gap < 1) //Gap cannot be 0, because we would swap two same positions.
             gap = 1;
 
-        for(int i {0}; i+gap < array.size(); i++)
+        for(int i {0}; i+gap < array.size(); ++i)
         {
             if(array[i+gap] < array[i]) //If the element array[i+gap] is < to array[i] then they are unsorted
             {
@@ -329,7 +336,7 @@ void heap_sort(std::vector<int> &array)
 {
     MaxHeap heap(array); //Class handling a max heap.
 
-    for(int i {0}; i < array.size(); i++) //Remove the root array.size() times to sort the array
+    for(int i {0}; i < array.size(); ++i) //Remove the root array.size() times to sort the array
         heap.remove_root();
 
     //Now array of heap is sorted. You can access to it by heap.get_heap_array();
@@ -342,10 +349,10 @@ void shell_sort(std::vector<int> &array)
 
     for(const int gap : gaps) // For each gap in the gap sequence
     {
-        for(int i { gap }; i < array.size(); i++)
+        for(int i { gap }; i < array.size(); ++i)
         {
             //Perform an insertion sort
-            int value_to_insert { array[i] };
+            const int value_to_insert { array[i] };
 
             int j {i};
 
@@ -360,6 +367,87 @@ void shell_sort(std::vector<int> &array)
     }
 }
 
+//void intro_sort(std::vector<int> &array, const int left_index, const int right_index, const int recursion_depth)
+{
+    int pivot_value {array[right_index]};
+    int wall_index {left_index};
+
+    for(int i {left_index}; i <= right_index; ++i)
+    {
+        if(array[i] < pivot_value)
+        {
+            swap(array, i, wall_index);
+            ++wall_index;
+        }
+    }
+
+    swap(array, wall_index, right_index);
+
+    if(wall_index - 1 > left_index)
+        {
+                intro_sort(array, left_index, wall_index-1, recursion_depth-1);
+        }
+
+    if(wall_index +1 < right_index)
+        intro_sort(array, wall_index+1, right_index, recursion_depth-1);
+}
+
+void pseudo_radix_sort(std::vector<int> &array)
+{
+    std::vector<std::deque<std::string>> buckets(10);
+
+    std::vector<std::string> to_string_array {};
+
+    int max_digit_number {0};
+
+    for(int i {0}; i < array.size(); i++)
+    {
+        std::string current_number_str {std::to_string(array[i])};
+        int digit_number {current_number_str.size()};
+
+        if(digit_number > max_digit_number)
+            max_digit_number = digit_number;
+
+        to_string_array.push_back(current_number_str);
+
+    }
+
+    for(int i {0}; i < to_string_array.size(); i++)
+    {
+        while(to_string_array[i].size() < max_digit_number)
+        {
+            to_string_array[i].insert(0, 1, '0');
+        }
+    }
+
+    //Ready to perform radix-sort.
+
+    for(int d {0}; d < max_digit_number; d++)
+    {
+        for(int i {0}; i < array.size(); i++)
+        {
+            std::string string_number {to_string_array[i]};
+            buckets[string_number[max_digit_number - d-1] - '0'].push_back(string_number);
+        }
+
+        to_string_array.clear();
+
+        for(std::deque<std::string> &bucket : buckets)
+        {
+            while(!bucket.empty())
+            {
+                to_string_array.push_back(bucket.front());
+                bucket.pop_front();
+            }
+        }
+    }
+
+    for(int i {0}; i < array.size(); i++)
+    {
+        array[i] = std::stoi(to_string_array[i]);
+    }
+}
+
 typedef std::chrono::high_resolution_clock Clock;
 
 int main()
@@ -368,19 +456,16 @@ int main()
 
     std::vector<int> array {};
 
-    for(int i {0}; i < 5; i++)
+    for(int i {0}; i < 100000000; i++)
     {
-        array.push_back(rand()%100);
+        array.push_back(rand()%100000000);
     }
-    debug_array(array);
 
     auto start_time = Clock::now();
 
-    shell_sort(array);
+    intro_sort(array, 0, array.size()-1, 2 * (std::log2(array.size())));
 
     auto end_time = Clock::now();
-
-    debug_array(array);
 
     std::cout << std::boolalpha << is_sorted(array) << std::endl;
 
